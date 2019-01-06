@@ -32,6 +32,7 @@ ClockService::ClockService() {
 void ClockService::init() {
     this->getRtc()->begin();
 
+    Wire.begin(PIN_I2C_SCL, PIN_I2C_SDA);
     Wire.beginTransmission(DS3231_ADDRESS);
     byte error = Wire.endTransmission();
 
