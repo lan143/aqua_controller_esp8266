@@ -67,7 +67,7 @@ void ApiService::updateSettings() {
     if (httpResponseCode == 200) {
         String response = client.getString();
 
-        StaticJsonBuffer<2000> jsonBuffer;
+        StaticJsonBuffer<1000> jsonBuffer;
         JsonObject &root = jsonBuffer.parseObject(response);
 
         App->getSettingsService()->setLightMode(root["lighting"]);

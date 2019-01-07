@@ -28,6 +28,8 @@
 #include <Wire.h>
 #include <RTClib.h>
 
+#include "../defines.h"
+
 class ClockService {
 public:
     ClockService();

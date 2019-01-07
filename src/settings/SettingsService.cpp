@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include "../AppService.h"
 #include "SettingsService.h"
 
 SettingsService::SettingsService() {
@@ -53,12 +54,36 @@ void SettingsService::setLightMode(int8_t mode) {
 }
 
 void SettingsService::setWifiAPSSID(const char *ssid) {
-    this->_eeprom->put(ADDRESS_WIFI_SSID, ssid);
+    int8_t i = 0;
+
+    while (true) {
+        this->_eeprom->write(ADDRESS_WIFI_SSID + i, *ssid);
+
+        if (*ssid == '\0') {
+            break;
+        }
+
+        ++ssid;
+        ++i;
+    }
+
     this->_eeprom->commit();
 }
 
 void SettingsService::setWifiAPPassword(const char *password) {
-    this->_eeprom->put(ADDRESS_WIFI_PASSWORD, password);
+    int8_t i = 0;
+
+    while (true) {
+        this->_eeprom->write(ADDRESS_WIFI_PASSWORD + i, *password);
+
+        if (*password == '\0') {
+            break;
+        }
+
+        ++password;
+        ++i;
+    }
+
     this->_eeprom->commit();
 }
 
@@ -78,12 +103,36 @@ void SettingsService::setEndLighting(int16_t time) {
 }
 
 void SettingsService::setApiAddress(const char *address) {
-    this->_eeprom->put(ADDRESS_API_ADDRESS, address);
+    int8_t i = 0;
+
+    while (true) {
+        this->_eeprom->write(ADDRESS_API_ADDRESS + i, *address);
+
+        if (*address == '\0') {
+            break;
+        }
+
+        ++address;
+        ++i;
+    }
+
     this->_eeprom->commit();
 }
 
 void SettingsService::setApiToken(const char *token) {
-    this->_eeprom->put(ADDRESS_API_TOKEN, token);
+    int8_t i = 0;
+
+    while (true) {
+        this->_eeprom->write(ADDRESS_API_TOKEN + i, *token);
+
+        if (*token == '\0') {
+            break;
+        }
+
+        ++token;
+        ++i;
+    }
+
     this->_eeprom->commit();
 }
 
@@ -93,29 +142,69 @@ void SettingsService::setApiAquariumId(int8_t id) {
 }
 
 int8_t SettingsService::getAerationMode() {
-    return this->_eeprom->read(ADDRESS_AERATION_MODE) ?: MODE_AUTO;
+    int8_t mode = this->_eeprom->read(ADDRESS_AERATION_MODE);
+
+    switch (mode) {
+        case MODE_AUTO:
+        case MODE_ENABLE:
+        case MODE_DISABLE:
+            return mode;
+        default:
+            this->setAerationMode(MODE_AUTO);
+            return MODE_AUTO;
+    }
 }
 
 int8_t SettingsService::getLightMode() {
-    return this->_eeprom->read(ADDRESS_LIGHT_MODE) ?: MODE_AUTO;
+    int8_t mode = this->_eeprom->read(ADDRESS_LIGHT_MODE);
+
+    switch (mode) {
+        case MODE_AUTO:
+        case MODE_ENABLE:
+        case MODE_DISABLE:
+            return mode;
+        default:
+            this->setLightMode(MODE_AUTO);
+            return MODE_AUTO;
+    }
 }
 
 int8_t SettingsService::getHeatingMode() {
-    return this->_eeprom->read(ADDRESS_HEATING_MODE) ?: MODE_AUTO;
+    int8_t mode = this->_eeprom->read(ADDRESS_HEATING_MODE);
+
+    switch (mode) {
+        case MODE_AUTO:
+        case MODE_ENABLE:
+        case MODE_DISABLE:
+            return mode;
+        default:
+            this->setHeatingMode(MODE_AUTO);
+            return MODE_AUTO;
+    }
 }
 
 int8_t SettingsService::getFilteringMode() {
-    return this->_eeprom->read(ADDRESS_FILTERING_MODE) ?: MODE_AUTO;
+    int8_t mode = this->_eeprom->read(ADDRESS_FILTERING_MODE);
+
+    switch (mode) {
+        case MODE_AUTO:
+        case MODE_ENABLE:
+        case MODE_DISABLE:
+            return mode;
+        default:
+            this->setFilteringMode(MODE_AUTO);
+            return MODE_AUTO;
+    }
 }
 
 String SettingsService::getWifiAPSSID() {
     String string = "";
 
     for (int32_t i = ADDRESS_WIFI_SSID; i <= ADDRESS_WIFI_PASSWORD; i++) {
-        int8_t byte = this->_eeprom->read(i);
+        char byte = this->_eeprom->read(i);
 
-        if (byte != '\n') {
-            string += this->_eeprom->read(i);
+        if (byte != '\0') {
+            string += byte;
         } else {
             break;
         }
@@ -128,10 +217,10 @@ String SettingsService::getWifiAPPassword() {
     String string = "";
 
     for (int32_t i = ADDRESS_WIFI_PASSWORD; i <= ADDRESS_API_ADDRESS; i++) {
-        int8_t byte = this->_eeprom->read(i);
+        char byte = this->_eeprom->read(i);
 
-        if (byte != '\n') {
-            string += this->_eeprom->read(i);
+        if (byte != '\0') {
+            string += byte;
         } else {
             break;
         }
@@ -162,10 +251,10 @@ String SettingsService::getApiAddress() {
     String string = "";
 
     for (int32_t i = ADDRESS_API_ADDRESS; i <= ADDRESS_API_TOKEN; i++) {
-        int8_t byte = this->_eeprom->read(i);
+        char byte = this->_eeprom->read(i);
 
-        if (byte != '\n') {
-            string += this->_eeprom->read(i);
+        if (byte != '\0') {
+            string += byte;
         } else {
             break;
         }
@@ -178,10 +267,10 @@ String SettingsService::getApiToken() {
     String string = "";
 
     for (int32_t i = ADDRESS_API_TOKEN; i <= ADDRESS_MAX; i++) {
-        int8_t byte = this->_eeprom->read(i);
+        char byte = this->_eeprom->read(i);
 
-        if (byte != '\n') {
-            string += this->_eeprom->read(i);
+        if (byte != '\0') {
+            string += byte;
         } else {
             break;
         }
@@ -191,5 +280,5 @@ String SettingsService::getApiToken() {
 }
 
 int8_t SettingsService::getApiAquariumId() {
-    return this->_eeprom->read(ADDRESS_AQUARIUM_ID) ?: MODE_AUTO;
+    return this->_eeprom->read(ADDRESS_AQUARIUM_ID);
 }
