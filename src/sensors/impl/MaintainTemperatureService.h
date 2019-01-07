@@ -41,6 +41,7 @@ protected:
     OneWire* _bus;
     DallasTemperature* _sensors;
     DeviceAddress _sensorAddress;
+    int _devicesCount;
 };
 
 #endif //AQUA_CONTROLLER_MAINTAINTEMPERATURESERVICE_H

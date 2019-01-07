@@ -23,6 +23,7 @@
  */
 
 #include "../../defines.h"
+#include "../../AppService.h"
 #include "MaintainTemperatureService.h"
 
 MaintainTemperatureService::MaintainTemperatureService() : Sensor(PIN_MAINTAIN_TEMPERATURE) {
@@ -32,13 +33,30 @@ MaintainTemperatureService::MaintainTemperatureService() : Sensor(PIN_MAINTAIN_T
     this->_sensors = new DallasTemperature(this->_bus);
 
     this->_sensors->begin();
+
+    this->_devicesCount = this->_sensors->getDeviceCount();
+
+    if (this->_devicesCount > 0) {
+        App->getSerial()->print("Found ");
+        App->getSerial()->print(this->_devicesCount);
+        App->getSerial()->println(" sensors. We will use 1 sensor.");
+    } else {
+        App->getSerial()->println("Not found D18B20 sensors.");
+    }
 }
 
 void MaintainTemperatureService::internalUpdate() {
-    this->_sensors->requestTemperatures();
-    float val = this->_sensors->getTempCByIndex(0);
+    if (this->_devicesCount) {
+        this->_sensors->requestTemperatures();
 
-    if (!isnan(val)) {
+        float val = 0;
+
+        for (int i = 0; i < this->_devicesCount; ++i) {
+            val += this->_sensors->getTempCByIndex(i);
+        }
+
+        val /= this->_devicesCount;
+
         this->_value = this->_filter->filter(val);
     } else {
         this->_value = -40;
