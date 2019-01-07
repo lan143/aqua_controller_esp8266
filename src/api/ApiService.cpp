@@ -67,7 +67,7 @@ void ApiService::updateSettings() {
     if (httpResponseCode == 200) {
         String response = client.getString();
 
-        StaticJsonBuffer<1000> jsonBuffer;
+        DynamicJsonBuffer jsonBuffer(500);
         JsonObject &root = jsonBuffer.parseObject(response);
 
         App->getSettingsService()->setLightMode(root["lighting"]);
@@ -95,16 +95,16 @@ void ApiService::sendStats() {
     App->getSerial()->println((String) url);
 
     char data[1000];
-    sprintf(
-            data,
-            "{\"heating\":\"%d\", \"aeration\": \"%d\", \"lighting\": \"%d\", \"filtering\": \"%d\", \"maintainTemperature\": \"%0.2f\", \"outerTemperature\": \"%0.2f\"}",
-            (int) App->getHeatingService()->isEnabled(),
-            (int) App->getAerationService()->isEnabled(),
-            (int) App->getLightService()->isEnabled(),
-            (int) App->getFilterService()->isEnabled(),
-            App->getMaintainTemperatureService()->getValue(),
-            App->getOuterTemperatureService()->getValue()
-    );
+    DynamicJsonBuffer jsonBuffer(500);
+    JsonObject& obj = jsonBuffer.createObject();
+
+    obj["heating"] = (int) App->getHeatingService()->isEnabled();
+    obj["aeration"] = (int) App->getAerationService()->isEnabled();
+    obj["lighting"] = (int) App->getLightService()->isEnabled();
+    obj["filtering"] = (int) App->getFilterService()->isEnabled();
+    obj["maintainTemperature"] = App->getMaintainTemperatureService()->getValue();
+    obj["outerTemperature"] = App->getOuterTemperatureService()->getValue();
+    obj.printTo(data);
 
     client.begin((String) url);
     client.addHeader("Content-Type", "application/json");
