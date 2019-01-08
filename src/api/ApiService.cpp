@@ -102,8 +102,19 @@ void ApiService::sendStats() {
     obj["aeration"] = (int) App->getAerationService()->isEnabled();
     obj["lighting"] = (int) App->getLightService()->isEnabled();
     obj["filtering"] = (int) App->getFilterService()->isEnabled();
-    obj["maintainTemperature"] = App->getMaintainTemperatureService()->getValue();
-    obj["outerTemperature"] = App->getOuterTemperatureService()->getValue();
+
+    if (!isnan(App->getMaintainTemperatureService()->getValue())) {
+        obj["maintainTemperature"] = App->getMaintainTemperatureService()->getValue();
+    } else {
+        obj["maintainTemperature"] = (float*)NULL;
+    }
+
+    if (!isnan(App->getOuterTemperatureService()->getValue())) {
+        obj["outerTemperature"] = App->getOuterTemperatureService()->getValue();
+    } else {
+        obj["outerTemperature"] = (float*)NULL;
+    }
+
     obj.printTo(data);
 
     client.begin((String) url);

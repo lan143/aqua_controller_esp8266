@@ -39,7 +39,7 @@ MaintainTemperatureService::MaintainTemperatureService() : Sensor(PIN_MAINTAIN_T
     if (this->_devicesCount > 0) {
         App->getSerial()->print("Found ");
         App->getSerial()->print(this->_devicesCount);
-        App->getSerial()->println(" sensors. We will use 1 sensor.");
+        App->getSerial()->println(" sensors.");
     } else {
         App->getSerial()->println("Not found D18B20 sensors.");
     }
@@ -59,7 +59,7 @@ void MaintainTemperatureService::internalUpdate() {
 
         this->_value = this->_filter->filter(val);
     } else {
-        this->_value = -40;
+        this->_value = NAN;
     }
 }
 

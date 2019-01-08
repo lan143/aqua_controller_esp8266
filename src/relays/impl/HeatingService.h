@@ -25,14 +25,23 @@
 #ifndef AQUA_CONTROLLER_HEATINGSERVICE_H
 #define AQUA_CONTROLLER_HEATINGSERVICE_H
 
+#include <PID_v1.h>
 #include "../RelayService.h"
+
+#define HEATING_UPDATE_INTERVAL 10000
 
 class HeatingService : public RelayService {
 public:
     HeatingService();
 
+    void update();
+
 protected:
     void internalUpdate();
+    PID * _pid;
+    double _setpoint;
+    double _input;
+    double _output;
 };
 
 #endif //AQUA_CONTROLLER_HEATINGSERVICE_H

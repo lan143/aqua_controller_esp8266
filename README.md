@@ -109,4 +109,5 @@ json кодированной строкой. Пример:
  * https://github.com/me-no-dev/ESPAsyncWebServer
  * https://github.com/PaulStoffregen/OneWire
  * https://github.com/adafruit/RTClib
+ * https://github.com/br3ttb/Arduino-PID-Library
  

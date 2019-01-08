@@ -27,6 +27,19 @@
 #include "HeatingService.h"
 
 HeatingService::HeatingService() : RelayService(PIN_RELAY_HEATING) {
+    double Kp = 2, Ki = 0.2, Kd = 0.5;
+    this->_pid = new PID(&this->_input, &this->_output, &this->_setpoint, Kp, Ki, Kd, DIRECT);
+    this->_pid->SetOutputLimits(0, 100);
+    this->_pid->SetMode(AUTOMATIC);
+}
+
+void HeatingService::update() {
+    this->_pid->Compute();
+
+    if ((millis() - this->_lastUpdateTime >= HEATING_UPDATE_INTERVAL) || this->_lastUpdateTime == 0) {
+        this->internalUpdate();
+        this->_lastUpdateTime = millis();
+    }
 }
 
 void HeatingService::internalUpdate() {
@@ -39,15 +52,15 @@ void HeatingService::internalUpdate() {
         App->getSerial()->println("Heating: Manual enabled");
         this->enable();
     } else if (mode == MODE_AUTO) {
-        int32_t needTemperature = App->getSettingsService()->getMaintainTemperature();
-        float currentTemperature = App->getMaintainTemperatureService()->getValue();
+        this->_setpoint = App->getSettingsService()->getMaintainTemperature();
+        this->_input = App->getMaintainTemperatureService()->getValue();
 
-        if (needTemperature - currentTemperature >= 2) {
-            App->getSerial()->println("Heating: Auto enabled");
+        if (this->_output > 50) {
             this->enable();
+            App->getSerial()->println("Heating: Auto enabled");
         } else {
-            App->getSerial()->println("Heating: Auto disabled");
             this->disable();
+            App->getSerial()->println("Heating: Auto disabled");
         }
     } else {
         App->getSerial()->print("Heating: Unknown mode: ");
