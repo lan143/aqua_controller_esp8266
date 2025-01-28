@@ -22,16 +22,15 @@
  * SOFTWARE.
  */
 
-#include <LiquidCrystal.h>
-#include "src/defines.h"
-#include "src/AppService.h"
+#include "defines.h"
+#include "AppService.h"
 
-void setup(void)
+void setup()
 {
     App->init();
 }
 
-void loop(void)
+void loop()
 {
     App->update();
 }

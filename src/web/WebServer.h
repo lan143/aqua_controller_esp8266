@@ -25,6 +25,7 @@
 #ifndef _RESTSERVER_H_
 #define _RESTSERVER_H_
 
+#include <Arduino.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 

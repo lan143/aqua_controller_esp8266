@@ -24,6 +24,7 @@
 
 #include <ArduinoJson.h>
 #include <ESP8266HTTPClient.h>
+#include <ESP8266WiFi.h>
 #include "../AppService.h"
 #include "ApiService.h"
 
@@ -44,6 +45,7 @@ void ApiService::internalUpdate() {
 void ApiService::updateSettings() {
     App->getSerial()->println("Call update settings");
 
+    WiFiClient wifiClient;
     HTTPClient client;
 
     char url[1000] = "";
@@ -55,7 +57,7 @@ void ApiService::updateSettings() {
     App->getSerial()->print("Url: ");
     App->getSerial()->println((String) url);
 
-    client.begin((String) url);
+    client.begin(wifiClient, (String)url);
     client.addHeader("Content-Type", "application/json");
     client.addHeader("Authorization", "Bearer " + App->getSettingsService()->getApiToken());
 
@@ -67,8 +69,10 @@ void ApiService::updateSettings() {
     if (httpResponseCode == 200) {
         String response = client.getString();
 
-        DynamicJsonBuffer jsonBuffer(500);
-        JsonObject &root = jsonBuffer.parseObject(response);
+        DynamicJsonDocument json_document(500);
+        DeserializationError err = deserializeJson(json_document, response);
+        json_document.shrinkToFit();
+        JsonObject root = json_document.as<JsonObject>();
 
         App->getSettingsService()->setLightMode(root["lighting"]);
         App->getSettingsService()->setHeatingMode(root["heating"]);
@@ -85,6 +89,7 @@ void ApiService::updateSettings() {
 void ApiService::sendStats() {
     App->getSerial()->println("Call send stats");
 
+    WiFiClient wifiClient;
     HTTPClient client;
 
     char url[1000] = "";
@@ -95,8 +100,8 @@ void ApiService::sendStats() {
     App->getSerial()->println((String) url);
 
     char data[1000];
-    DynamicJsonBuffer jsonBuffer(500);
-    JsonObject& obj = jsonBuffer.createObject();
+    DynamicJsonDocument json_document(500);
+    JsonObject obj = json_document.to<JsonObject>();
 
     obj["heating"] = (int) App->getHeatingService()->isEnabled();
     obj["aeration"] = (int) App->getAerationService()->isEnabled();
@@ -106,18 +111,19 @@ void ApiService::sendStats() {
     if (!isnan(App->getMaintainTemperatureService()->getValue())) {
         obj["maintainTemperature"] = App->getMaintainTemperatureService()->getValue();
     } else {
-        obj["maintainTemperature"] = (float*)NULL;
+        obj["maintainTemperature"] = nullptr;
     }
 
     if (!isnan(App->getOuterTemperatureService()->getValue())) {
         obj["outerTemperature"] = App->getOuterTemperatureService()->getValue();
     } else {
-        obj["outerTemperature"] = (float*)NULL;
+        obj["outerTemperature"] = nullptr;
     }
 
-    obj.printTo(data);
+    json_document.shrinkToFit();
+    serializeJson(json_document, data);
 
-    client.begin((String) url);
+    client.begin(wifiClient, (String) url);
     client.addHeader("Content-Type", "application/json");
     client.addHeader("Authorization", "Bearer " + App->getSettingsService()->getApiToken());
 

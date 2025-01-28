@@ -25,6 +25,8 @@
 #include "../AppService.h"
 #include "ClockService.h"
 
+#define DS3231_ADDRESS 0x68
+
 ClockService::ClockService() {
     this->_rtc = new RTC_DS3231();
 }
